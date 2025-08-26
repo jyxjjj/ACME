@@ -2,3 +2,5 @@
 Thumbs.db
 /.idea
 *.log
+.env
+release.sh

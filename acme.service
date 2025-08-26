@@ -7,9 +7,10 @@ After=network-online.target
 
 [Service]
 Type=simple
-Group=www-data
-User=www-data
-Environment=GIN_MODE=release
+Group=www
+User=www
+WorkingDirectory=/www/server/acme
+EnvironmentFile=/www/server/acme/.env
 ExecStart=/www/server/acme/ACME
 Restart=always
 RestartSec=1
