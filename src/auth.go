@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/gin-gonic/gin"
 	"os"
 	"strings"
+
+	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/gin-gonic/gin"
 )
 
 func authVerify(c *gin.Context) {

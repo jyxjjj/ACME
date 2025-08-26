@@ -24,9 +24,7 @@ RestrictRealtime=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_UNIX
 RestrictNamespaces=true
 LimitNOFILE=131072
-LimitNOFILESoft=65535
 LimitNPROC=65535
-LimitNPROCSoft=65535
 
 [Install]
 WantedBy=multi-user.target
