@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"os"
 )
 
@@ -35,7 +34,7 @@ func getCert(c *gin.Context) {
 		jsonResponse(c, ErrFileNotFound, nil)
 		return
 	}
-	content, err := ioutil.ReadFile(certPath)
+	content, err := os.ReadFile(certPath)
 	if err != nil {
 		jsonResponse(c, ErrReadFileFailed, nil)
 		return
@@ -55,7 +54,7 @@ func getKey(c *gin.Context) {
 		jsonResponse(c, ErrFileNotFound, nil)
 		return
 	}
-	content, err := ioutil.ReadFile(keyPath)
+	content, err := os.ReadFile(keyPath)
 	if err != nil {
 		jsonResponse(c, ErrReadFileFailed, nil)
 		return
