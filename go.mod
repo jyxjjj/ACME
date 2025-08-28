@@ -7,6 +7,8 @@ require (
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/libdns/cloudflare v0.2.1
+	github.com/mholt/acmez/v3 v3.1.2
+	github.com/sirupsen/logrus v1.9.3
 )
 
 require (
@@ -27,7 +29,6 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/libdns/libdns v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mholt/acmez/v3 v3.1.2 // indirect
 	github.com/miekg/dns v1.1.63 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
