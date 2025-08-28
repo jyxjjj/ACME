@@ -1,7 +1,7 @@
 [Unit]
 Description=ACME Client with Certificate Sharing API
-StartLimitInterval=30s
-StartLimitBurst=3
+StartLimitInterval=10s
+StartLimitBurst=1
 Wants=network-online.target
 After=network-online.target
 
