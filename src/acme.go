@@ -18,6 +18,7 @@ var (
 	email       string
 	domains     []string
 	client      acmez.Client
+	account     acme.Account
 	baseDir     string
 	accountDir  string
 	accountJson string
@@ -64,11 +65,11 @@ func initDirs() {
 		}
 	}
 	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/cert.pem
-	domainCrt = domainDir + "/cert.pem"
+	domainCrt = domainDir + "/cert.crt"
 	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/cert.json
 	domainJson = domainDir + "/cert.json"
 	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/key.pem
-	domainKey = domainDir + "/key.pem"
+	domainKey = domainDir + "/priv.key"
 	// create dirs if not exist
 	dirs := []string{baseDir, accountDir, domainDir}
 	for _, dir := range dirs {
@@ -98,7 +99,14 @@ func initSolver(cloudflareSolver certmagic.DNSProvider) *certmagic.DNS01Solver {
 			PropagationDelay:   15 * time.Second,
 			PropagationTimeout: 5 * time.Minute,
 			Resolvers: []string{
-				"127.0.0.53:53",
+				// "127.0.0.53:53",
+				"127.0.0.1:53",
+				"1.1.1.1:53",
+				"1.0.0.1:53",
+				"8.8.8.8:53",
+				"8.8.4.4:53",
+				"223.5.5.5:53",
+				"223.6.6.6:53",
 			},
 		},
 	}
@@ -122,11 +130,11 @@ func initACMEClient(solver *certmagic.DNS01Solver) {
 
 // main certificate management workflow
 func manageCertificates() error {
-	acc, err := getOrRegisterAccount()
+	err := getOrRegisterAccount()
 	if err != nil {
 		return err
 	}
-	Log.Println("[ACME] Using Account:", acc.Location)
+	Log.Println("[ACME] Using Account:", account.Location)
 	err = newOrRenewCert()
 	if err != nil {
 		return err
