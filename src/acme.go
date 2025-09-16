@@ -1,14 +1,6 @@
 package main
 
 import (
-	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/x509"
-	"encoding/json"
-	"encoding/pem"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -81,7 +73,7 @@ func initDirs() {
 	dirs := []string{baseDir, accountDir, domainDir}
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			if err := os.MkdirAll(dir, 2755); err != nil {
+			if err := os.MkdirAll(dir, 02755); err != nil {
 				Log.Fatalln("Failed to create directory:", dir, err)
 			}
 		}
@@ -130,72 +122,14 @@ func initACMEClient(solver *certmagic.DNS01Solver) {
 
 // main certificate management workflow
 func manageCertificates() error {
-	acc, err := getOrRegisterAccount(email)
+	acc, err := getOrRegisterAccount()
 	if err != nil {
 		return err
 	}
 	Log.Println("[ACME] Using Account:", acc.Location)
+	err = newOrRenewCert()
+	if err != nil {
+		return err
+	}
 	return nil
-}
-
-func getOrRegisterAccount(email string) (*acme.Account, error) {
-	ctx := context.Background()
-	wantMail := "mailto:" + email
-	// data, err := os.ReadFile(accountJson)
-	// if err == nil {
-	// 	Log.Println("[ACME] Found existing account file:", accountJson)
-	// 	var acc acme.Account
-	// 	err := json.Unmarshal(data, &acc)
-	// 	if err == nil {
-	// 		Log.Println("[ACME] Loading existing account:", acc.Location)
-	// 		found := slices.Contains(acc.Contact, wantMail)
-	// 		if !found {
-	// 			Log.Println("[ACME] Updating account email to:", email)
-	// 			acc.Contact = []string{wantMail}
-	// 			updated, err := client.UpdateAccount(ctx, acc)
-	// 			if err != nil {
-	// 				return nil, err
-	// 			}
-	// 			if data, err := json.Marshal(updated); err == nil {
-	// 				_ = os.WriteFile(accountJson, data, 0600)
-	// 			}
-	// 			return &updated, nil
-	// 		}
-	// 		return &acc, nil
-	// 	}
-	// }
-	Log.Println("[ACME] Registering Account with email:", email)
-	Log.Println("[ACME] Generating new account private key...")
-	accountPrivateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return nil, fmt.Errorf("error while generating account key: %v", err)
-	}
-	Log.Println("[ACME] Saving new account private key to:", accountKey)
-	keyBytes, err := x509.MarshalECPrivateKey(accountPrivateKey)
-	if err != nil {
-		return nil, fmt.Errorf("error while marshaling account key: %v", err)
-	}
-	pemBlock := &pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: keyBytes,
-	}
-	pemData := pem.EncodeToMemory(pemBlock)
-	err = os.WriteFile(accountKey, []byte(pemData), 0600)
-	if err != nil {
-		return nil, fmt.Errorf("error while saving account key: %v", err)
-	}
-	account := acme.Account{
-		Contact:              []string{wantMail},
-		TermsOfServiceAgreed: true,
-		PrivateKey:           accountPrivateKey,
-	}
-	account, err = client.NewAccount(ctx, account)
-	if err != nil {
-		return nil, err
-	}
-	data, err := json.Marshal(account)
-	if err == nil {
-		_ = os.WriteFile(accountJson, data, 0600)
-	}
-	return &account, nil
 }
