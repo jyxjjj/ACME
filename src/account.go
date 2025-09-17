@@ -78,7 +78,7 @@ func loadAccount(ctx context.Context, wantMail string) error {
 func registerAccount(ctx context.Context, wantMail string) error {
 	Log.Println("[ACME] Registering Account with email:", email)
 	Log.Println("[ACME] Generating new account private key...")
-	accountPrivateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	accountPrivateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return fmt.Errorf("error while generating account key: %v", err)
 	}

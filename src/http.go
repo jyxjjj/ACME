@@ -6,15 +6,20 @@ import (
 	"net/http"
 )
 
-func initHTTPClient() {
-	http.DefaultClient.Transport = getIPv4OnlyTransport()
+type clientTransport struct {
+	baseTransport http.RoundTripper
 }
 
-func getIPv4OnlyTransport() *http.Transport {
+func initHTTPClient() {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	originalDialContext := transport.DialContext
 	transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 		return originalDialContext(ctx, "tcp4", addr)
 	}
-	return transport
+	http.DefaultClient.Transport = &clientTransport{baseTransport: transport}
+}
+
+func (base *clientTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", "DESMG ACME Service")
+	return base.baseTransport.RoundTrip(req)
 }

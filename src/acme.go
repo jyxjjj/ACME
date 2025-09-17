@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log/slog"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -58,12 +58,8 @@ func initDirs() {
 	accountJson = accountDir + "/account.json"
 	// ./data/acme-staging-v02.api.letsencrypt.org/accounts/{email}/account.key
 	accountKey = accountDir + "/account.key"
-	for domain := range domains {
-		if isRootDomain(domains[domain]) {
-			// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/
-			domainDir = baseDir + "/certs/" + domains[domain]
-		}
-	}
+	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/
+	domainDir = baseDir + "/certs/" + domains[0]
 	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/cert.pem
 	domainCrt = domainDir + "/cert.crt"
 	// ./data/acme-staging-v02.api.letsencrypt.org/certs/example.com/cert.json
@@ -87,27 +83,37 @@ func initDomains() {
 		Log.Fatalln("CERT_DOMAIN is not set")
 	}
 	split := strings.SplitSeq(domain, ",")
-	for domain := range split {
-		domains = append(domains, domain)
+	for d := range split {
+		domains = append(domains, d)
 	}
+	if len(domains) == 0 {
+		Log.Fatalln("No valid domain found in CERT_DOMAIN")
+	}
+	Log.Println("[Manager] Managing certificate for domains:", strings.Join(domains, ", "))
 }
 
 func initSolver(cloudflareSolver certmagic.DNSProvider) *certmagic.DNS01Solver {
 	return &certmagic.DNS01Solver{
 		DNSManager: certmagic.DNSManager{
 			DNSProvider:        cloudflareSolver,
-			PropagationDelay:   15 * time.Second,
-			PropagationTimeout: 5 * time.Minute,
-			Resolvers: []string{
-				// "127.0.0.53:53",
-				"127.0.0.1:53",
-				"1.1.1.1:53",
-				"1.0.0.1:53",
-				"8.8.8.8:53",
-				"8.8.4.4:53",
-				"223.5.5.5:53",
-				"223.6.6.6:53",
-			},
+			PropagationDelay:   3 * time.Second,
+			PropagationTimeout: 2 * time.Minute,
+			Resolvers: func() []string {
+				if runtime.GOOS == "linux" {
+					return []string{
+						"127.0.0.53:53",
+					}
+				}
+				return []string{
+					"127.0.0.1:53",
+					"1.1.1.1:53",
+					"1.0.0.1:53",
+					"8.8.8.8:53",
+					"8.8.4.4:53",
+					"223.5.5.5:53",
+					"223.6.6.6:53",
+				}
+			}(),
 		},
 	}
 }
@@ -116,9 +122,8 @@ func initACMEClient(solver *certmagic.DNS01Solver) {
 	client = acmez.Client{
 		Client: &acme.Client{
 			Directory:  CADirectory,
-			UserAgent:  "DESMG ACME Service",
 			HTTPClient: http.DefaultClient,
-			Logger:     slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})),
+			Logger:     getLogrusSLogProxy(),
 		},
 		ChallengeSolvers: map[string]acmez.Solver{
 			acme.ChallengeTypeDNS01:     solver,
@@ -130,6 +135,7 @@ func initACMEClient(solver *certmagic.DNS01Solver) {
 
 // main certificate management workflow
 func manageCertificates() error {
+	Log.Println("[Manager] ACME Directory:", CADirectory)
 	err := getOrRegisterAccount()
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 func newOrRenewCert() error {
 	ctx := context.Background()
-	if _, err := os.Stat(domainCrt); os.IsNotExist(err) {
+	if _, err := os.Stat(domainJson); os.IsNotExist(err) {
 		return newCert(ctx)
 	} else {
 		return renewCert(ctx)
@@ -23,7 +24,7 @@ func newOrRenewCert() error {
 
 func newCert(ctx context.Context) error {
 	Log.Println("[ACME] No existing certificate found, requesting new one for domains:", strings.Join(domains, ", "))
-	domainPrivateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	domainPrivateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return fmt.Errorf("error generating domain private key: %v", err)
 	}
@@ -45,25 +46,42 @@ func newCert(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error obtaining certificate: %v", err)
 	}
-	certPem := []byte{}
 	for _, cert := range certs {
-		certPem = append(certPem, cert.ChainPEM...)
-		certPem = append(certPem, cert.CA...)
-	}
-	Log.Println("[ACME] Saving certificate to:", domainCrt)
-	err = os.WriteFile(domainCrt, certPem, 0644)
-	if err != nil {
-		return fmt.Errorf("error saving certificate: %v", err)
+		certificates := strings.Split(string(cert.ChainPEM), "\n\n")
+		intermediateCA := certificates[1]
+		intermediateCABlock, _ := pem.Decode([]byte(intermediateCA))
+		if intermediateCABlock == nil {
+			return fmt.Errorf("error decoding intermediate CA certificate: no PEM block found")
+		}
+		intermediateCABlockParsed, err := x509.ParseCertificate(intermediateCABlock.Bytes)
+		if err != nil {
+			return fmt.Errorf("error parsing intermediate CA certificate: %v", err)
+		}
+		if intermediateCABlockParsed.SignatureAlgorithm != x509.ECDSAWithSHA384 {
+			continue
+		}
+		Log.Println("[ACME] Saving certificate to:", domainCrt)
+		err = os.WriteFile(domainCrt, cert.ChainPEM, 0644)
+		if err != nil {
+			return fmt.Errorf("error saving certificate pem: %v", err)
+		}
+		json, err := json.Marshal(cert)
+		if err != nil {
+			return fmt.Errorf("error marshaling certificate json: %v", err)
+		}
+		err = os.WriteFile(domainJson, json, 0644)
+		if err != nil {
+			return fmt.Errorf("error saving certificate json: %v", err)
+		}
 	}
 	Log.Println("[ACME] Successfully obtained and saved new certificate for domains:", strings.Join(domains, ", "))
 	return nil
 }
 func renewCert(ctx context.Context) error {
 	Log.Println("[ACME] Found existing certificate, checking if renewal is needed for domains:", strings.Join(domains, ", "))
-	cert, err := os.ReadFile(domainCrt)
-	if err != nil {
-		return err
-	}
-	Log.Println("[ACME] Current certificate:\n", string(cert))
+	// cert, err := os.ReadFile(domainCrt)
+	// if err != nil {
+	// return err
+	// }
 	return nil
 }
