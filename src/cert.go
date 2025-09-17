@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/mholt/acmez/v3/acme"
 )
 
 func newOrRenewCert() error {
@@ -79,9 +81,16 @@ func newCert(ctx context.Context) error {
 }
 func renewCert(ctx context.Context) error {
 	Log.Println("[ACME] Found existing certificate, checking if renewal is needed for domains:", strings.Join(domains, ", "))
-	// cert, err := os.ReadFile(domainCrt)
-	// if err != nil {
-	// return err
-	// }
+	jsonBytes, err := os.ReadFile(domainJson)
+	if err != nil {
+		return err
+	}
+	var cert *acme.Certificate
+	err = json.Unmarshal(jsonBytes, &cert)
+	if err != nil {
+		return err
+	}
 	return nil
+	// TODO check time and renew if needed
+	return newCert(ctx)
 }
