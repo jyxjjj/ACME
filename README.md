@@ -67,7 +67,11 @@ systemctl status acme.service
 - `GET /cert` —— 返回证书 PEM（完整链），JSON 格式。
 - `GET /key`  —— 返回私钥 PEM，JSON 格式。
 
-安全：两个接口都需要通过 Cloudflare Access 发放的 JWT（请求头名：`Cf-Access-Jwt-Assertion`）。程序会使用 `CF_ZT_ORG_NAME` 与 `CF_ZT_AUD` 来验证 JWT。
+安全：两个接口都需要通过 Cloudflare Access 发放的 JWT（请求头名：`Cf-Access-Jwt-Assertion`）。
+
+该JWT由 Cloudflare Access 自动请求，你只需要在客户端配置 Service Token ID 与 Secret， CloudFlare Access 会自动将其转换为 JWT 并添加到请求头中。
+
+程序会使用 `CF_ZT_ORG_NAME` 与 `CF_ZT_AUD` 来验证 JWT。
 
 确保下游请求通过 Cloudflare Access 或在可信网络中使用。
 
