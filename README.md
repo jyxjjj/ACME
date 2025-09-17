@@ -67,7 +67,11 @@ systemctl status acme.service
 - `GET /cert` —— 返回证书 PEM（完整链），JSON 格式。
 - `GET /key`  —— 返回私钥 PEM，JSON 格式。
 
-安全：两个接口都需要通过 Cloudflare Access 发放的 JWT（请求头名：`Cf-Access-Jwt-Assertion`）。程序会使用 `CF_ZT_ORG_NAME` 与 `CF_ZT_AUD` 来验证 JWT。确保下游请求通过 Cloudflare Access 或在可信网络中使用。
+安全：两个接口都需要通过 Cloudflare Access 发放的 JWT（请求头名：`Cf-Access-Jwt-Assertion`）。程序会使用 `CF_ZT_ORG_NAME` 与 `CF_ZT_AUD` 来验证 JWT。
+
+确保下游请求通过 Cloudflare Access 或在可信网络中使用。
+
+请参阅： [https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/](https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/)
 
 返回格式（统一 JSON）：
 
@@ -90,12 +94,13 @@ systemctl status acme.service
 示例：使用 curl 获取证书
 
 ```bash
-# 假设你已经拿到 Cloudflare Access 的 JWT token
-JWT="<Cf-Access-Jwt-Assertion token>"
-curl -sS -H "Cf-Access-Jwt-Assertion: $JWT" "http://127.0.0.1:9504/cert" | jq -r '.data'
+# Documentation: https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/
+
+# 获取证书
+curl -fSsL -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/cert" | jq -r '.data'
 
 # 获取私钥（注意：私钥应受严格保护）
-curl -sS -H "Cf-Access-Jwt-Assertion: $JWT" "http://127.0.0.1:9504/key" | jq -r '.data'
+curl -fSsL -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/key" | jq -r '.data'
 ```
 
 注意：API 返回的 `data` 字段在成功时为 PEM 文本（字符串）。请勿在不安全的通道或日志中泄露私钥。
