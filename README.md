@@ -101,10 +101,10 @@ systemctl status acme.service
 # Documentation: https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/
 
 # 获取证书
-curl -fSsL -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/cert" | jq -r '.data'
+curl -fSsL -4 --connect-timeout 10 --retry-delay 1 --retry 10 -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/cert" | jq -r '.data'
 
 # 获取私钥（注意：私钥应受严格保护）
-curl -fSsL -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/key" | jq -r '.data'
+curl -fSsL -4 --connect-timeout 10 --retry-delay 1 --retry 10 -H "CF-Access-Client-Id: <your-service-id>.access" -H "CF-Access-Client-Secret: <your-service-secret>" "http://127.0.0.1:9504/key" | jq -r '.data'
 ```
 
 注意：API 返回的 `data` 字段在成功时为 PEM 文本（字符串）。请勿在不安全的通道或日志中泄露私钥。
