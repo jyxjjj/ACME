@@ -40,8 +40,7 @@ func newCert(ctx context.Context) error {
 		Bytes: keyBytes,
 	}
 	pemData := pem.EncodeToMemory(pemBlock)
-	err = os.WriteFile(domainKey, []byte(pemData), 0600)
-	if err != nil {
+	if err := os.WriteFile(domainKey, []byte(pemData), 0600); err != nil {
 		return fmt.Errorf("error saving domain private key: %v", err)
 	}
 	certs, err := client.ObtainCertificateForSANs(ctx, account, domainPrivateKey, domains)
