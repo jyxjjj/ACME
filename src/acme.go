@@ -136,13 +136,11 @@ func initACMEClient(solver *certmagic.DNS01Solver) {
 // main certificate management workflow
 func manageCertificates() error {
 	Log.Println("[Manager] ACME Directory:", CADirectory)
-	err := getOrRegisterAccount()
-	if err != nil {
+	if err := getOrRegisterAccount(); err != nil {
 		return err
 	}
 	Log.Println("[ACME] Using Account:", account.Location)
-	err = newOrRenewCert()
-	if err != nil {
+	if err := newOrRenewCert(); err != nil {
 		return err
 	}
 	return nil
