@@ -43,8 +43,7 @@ func loadAccount(ctx context.Context, wantMail string) error {
 	if err != nil {
 		return fmt.Errorf("error while parsing account private key: %v", err)
 	}
-	err = json.Unmarshal(acc, &account)
-	if err != nil {
+	if err := json.Unmarshal(acc, &account); err != nil {
 		return fmt.Errorf("error while unmarshaling account file: %v", err)
 	}
 	account.PrivateKey = accountPrivateKey
@@ -92,8 +91,7 @@ func registerAccount(ctx context.Context, wantMail string) error {
 		Bytes: keyBytes,
 	}
 	pemData := pem.EncodeToMemory(pemBlock)
-	err = os.WriteFile(accountKey, []byte(pemData), 0600)
-	if err != nil {
+	if err := os.WriteFile(accountKey, []byte(pemData), 0600); err != nil {
 		return fmt.Errorf("error while saving account key: %v", err)
 	}
 	account = acme.Account{
@@ -107,9 +105,9 @@ func registerAccount(ctx context.Context, wantMail string) error {
 	}
 	data, err := json.Marshal(account)
 	if err != nil {
+		return fmt.Errorf("error marshaling account: %v", err)
 	}
-	err = os.WriteFile(accountJson, data, 0600)
-	if err != nil {
+	if err := os.WriteFile(accountJson, data, 0600); err != nil {
 		return fmt.Errorf("error while saving account file: %v", err)
 	}
 	Log.Println("[ACME] Registered new account with Location:", account.Location)
