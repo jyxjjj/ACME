@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/libdns/cloudflare v0.2.2
-	github.com/mholt/acmez/v3 v3.1.3
+	github.com/mholt/acmez/v3 v3.1.4
 	github.com/sirupsen/logrus v1.9.3
 )
 
