@@ -65,8 +65,11 @@ func loadAccount(ctx context.Context, wantMail string) error {
 			return fmt.Errorf("error while updating account: %v", err)
 		}
 		data, err := json.Marshal(updatedAccount)
-		if err == nil {
-			_ = os.WriteFile(accountJson, data, 0600)
+		if err != nil {
+			return fmt.Errorf("error marshaling updated account: %v", err)
+		}
+		if err := os.WriteFile(accountJson, data, 0600); err != nil {
+			return fmt.Errorf("error writing account file: %v", err)
 		}
 		account = updatedAccount
 	}
