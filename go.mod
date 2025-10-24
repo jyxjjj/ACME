@@ -1,6 +1,6 @@
 module github.com/jyxjjj/ACME
 
-go 1.25.1
+go 1.25.2
 
 require (
 	github.com/caddyserver/certmagic v0.25.0
