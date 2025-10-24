@@ -62,8 +62,7 @@ func newCert(ctx context.Context) error {
 			continue
 		}
 		Log.Println("[ACME] Saving certificate to:", domainCrt)
-		err = os.WriteFile(domainCrt, cert.ChainPEM, 0644)
-		if err != nil {
+		if err := os.WriteFile(domainCrt, cert.ChainPEM, 0644); err != nil {
 			return fmt.Errorf("error saving certificate pem: %v", err)
 		}
 		json, err := json.Marshal(cert)
