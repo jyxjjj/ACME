@@ -70,8 +70,7 @@ func newCert(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("error marshaling certificate json: %v", err)
 		}
-		err = os.WriteFile(domainJson, json, 0644)
-		if err != nil {
+		if err := os.WriteFile(domainJson, jsonData, 0644); err != nil {
 			return fmt.Errorf("error saving certificate json: %v", err)
 		}
 	}
