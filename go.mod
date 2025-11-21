@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/caddyserver/certmagic v0.25.0
-	github.com/coreos/go-oidc/v3 v3.16.0
+	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/libdns/cloudflare v0.2.2
 	github.com/mholt/acmez/v3 v3.1.4
